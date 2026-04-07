@@ -3,6 +3,8 @@ package com.drinks.controllers;
 import com.drinks.services.NavigationManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
 public class LoginController {
@@ -17,7 +19,17 @@ public class LoginController {
         card.getStyleClass().add("auth-card");
         card.setMaxWidth(400);
 
-        Label logo = new Label("KLS");
+        Label logo = new Label();
+        try {
+            Image logoImg = new Image(getClass().getResourceAsStream("/com/drinks/assets/images/kls-logo.png"));
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setFitWidth(56);
+            logoView.setFitHeight(56);
+            logoView.setPreserveRatio(true);
+            logo.setGraphic(logoView);
+        } catch (Exception e) {
+            logo.setText("KLS");
+        }
         logo.getStyleClass().addAll("auth-logo", "medium");
         logo.setAlignment(Pos.CENTER);
 

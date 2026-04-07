@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -34,16 +36,26 @@ public class AdminLayoutController {
         HBox logoRow = new HBox(10);
         logoRow.setAlignment(Pos.CENTER_LEFT);
         logoRow.setPadding(new Insets(0, 0, 16, 0));
-        Label logo = new Label("KLS");
+        Label logo = new Label();
+        try {
+            Image logoImg = new Image(getClass().getResourceAsStream("/com/drinks/assets/images/kls-logo.png"));
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setFitWidth(32);
+            logoView.setFitHeight(32);
+            logoView.setPreserveRatio(true);
+            logo.setGraphic(logoView);
+        } catch (Exception e) {
+            logo.setText("KLS");
+        }
         logo.getStyleClass().add("sidebar-logo");
         Label logoText = new Label("Kamnyweso HQ");
         logoText.getStyleClass().add("sidebar-logo-text");
         logoRow.getChildren().addAll(logo, logoText);
         sidebar.getChildren().add(logoRow);
 
-        Separator sep1 = new Separator();
-        sep1.getStyleClass().add("sidebar-sep");
-        sidebar.getChildren().add(sep1);
+        VBox navContainer = new VBox(4);
+        navContainer.setPadding(new Insets(8, 0, 8, 0));
+        sidebar.getChildren().add(navContainer);
 
         // Register view factories — each creates a controller only on first access
         viewFactories.put("Dashboard", () -> new AdminDashboardController(this).getView());
@@ -79,28 +91,32 @@ public class AdminLayoutController {
                 navigateTo(name);
             });
             if (idx == 0) setActiveNav(navBtn);
-            sidebar.getChildren().add(navBtn);
+            navContainer.getChildren().add(navBtn);
             idx++;
         }
 
-        Separator sep2 = new Separator();
-        sep2.getStyleClass().add("sidebar-sep");
-        sidebar.getChildren().add(sep2);
+        Region sidebarSpacer = new Region();
+        VBox.setVgrow(sidebarSpacer, Priority.ALWAYS);
+        sidebar.getChildren().add(sidebarSpacer);
 
+        VBox footerBox = new VBox(4);
+        footerBox.getStyleClass().add("footer-box");
+        footerBox.setPadding(new Insets(16, 0, 0, 0));
+        
         Button settingsBtn = new Button("Settings");
         settingsBtn.setGraphic(Icons.settings(16, navColor));
         settingsBtn.getStyleClass().add("nav-item");
         settingsBtn.setMaxWidth(Double.MAX_VALUE);
         settingsBtn.setAlignment(Pos.CENTER_LEFT);
-        sidebar.getChildren().add(settingsBtn);
-
-        Button logoutBtn = new Button("Logout");
-        logoutBtn.setGraphic(Icons.logOut(16, navColor));
-        logoutBtn.getStyleClass().add("nav-item");
-        logoutBtn.setMaxWidth(Double.MAX_VALUE);
-        logoutBtn.setAlignment(Pos.CENTER_LEFT);
-        logoutBtn.setOnAction(e -> NavigationManager.getInstance().navigate("login", new LoginController().getView()));
-        sidebar.getChildren().add(logoutBtn);
+        
+        Button collapseBtn = new Button("Collapse Sidebar");
+        collapseBtn.setGraphic(Icons.createIcon("M15 18l-6-6 6-6", 16, navColor)); // Chevron left
+        collapseBtn.getStyleClass().add("nav-item");
+        collapseBtn.setMaxWidth(Double.MAX_VALUE);
+        collapseBtn.setAlignment(Pos.CENTER_LEFT);
+        
+        footerBox.getChildren().addAll(settingsBtn, collapseBtn);
+        sidebar.getChildren().add(footerBox);
 
         VBox.setVgrow(sidebar, Priority.ALWAYS);
 
@@ -172,12 +188,19 @@ public class AdminLayoutController {
     }
 
     private void setActiveNav(Button activeBtn) {
-        for (Node child : sidebar.getChildren()) {
+        // Clear all active states in sidebar children recursively
+        clearActiveStates(sidebar);
+        activeBtn.getStyleClass().add("active");
+    }
+
+    private void clearActiveStates(Pane container) {
+        for (Node child : container.getChildren()) {
             if (child instanceof Button) {
                 child.getStyleClass().remove("active");
+            } else if (child instanceof Pane) {
+                clearActiveStates((Pane) child);
             }
         }
-        activeBtn.getStyleClass().add("active");
     }
 
     public BorderPane getView() {

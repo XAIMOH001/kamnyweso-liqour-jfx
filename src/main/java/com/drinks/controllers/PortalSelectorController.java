@@ -7,6 +7,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -18,7 +20,17 @@ public class PortalSelectorController {
         view.setAlignment(Pos.CENTER);
         view.getStyleClass().add("auth-page");
 
-        Label logo = new Label("KLS");
+        Label logo = new Label();
+        try {
+            Image logoImg = new Image(getClass().getResourceAsStream("/com/drinks/assets/images/kls-logo.png"));
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setFitWidth(120);
+            logoView.setFitHeight(120);
+            logoView.setPreserveRatio(true);
+            logo.setGraphic(logoView);
+        } catch (Exception e) {
+            logo.setText("KLS");
+        }
         logo.getStyleClass().addAll("auth-logo", "large");
 
         Label title = new Label("Kamnyweso Liqour Store");

@@ -9,6 +9,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -110,23 +112,60 @@ public class PlaceOrderController {
     }
 
     private VBox createDrinkCard(Drink drink) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(0); // 0 spacing because we use padding on elements
         card.getStyleClass().add("drink-card");
-        card.setPadding(new Insets(12));
-        Region imgPlaceholder = new Region();
-        imgPlaceholder.getStyleClass().addAll("drink-img-placeholder", "tall");
-        Label name = new Label(drink.getName()); name.getStyleClass().add("drink-name");
-        Label brand = new Label(drink.getBrand()); brand.getStyleClass().add("drink-brand");
+        card.setMaxWidth(220);
+
+        StackPane imgContainer = new StackPane();
+        imgContainer.getStyleClass().add("drink-img-container");
+        imgContainer.setPrefHeight(180);
+        imgContainer.setMinHeight(180);
+
+        try {
+            String path = "/com/drinks/assets/images/" + drink.getImage().replace("/", "");
+            Image img = new Image(getClass().getResourceAsStream(path));
+            ImageView iv = new ImageView(img);
+            iv.setFitHeight(140);
+            iv.setFitWidth(140);
+            iv.setPreserveRatio(true);
+            imgContainer.getChildren().add(iv);
+        } catch (Exception e) {
+            Region placeholder = new Region();
+            placeholder.getStyleClass().add("drink-img-placeholder");
+            imgContainer.getChildren().add(placeholder);
+        }
+
+        VBox content = new VBox(4);
+        content.setPadding(new Insets(12, 16, 16, 16));
+        
+        Label name = new Label(drink.getName()); 
+        name.getStyleClass().add("drink-name");
+        Label brand = new Label(drink.getBrand()); 
+        brand.getStyleClass().add("drink-brand");
+        
         HBox bottom = new HBox();
-        bottom.setAlignment(Pos.CENTER_LEFT); bottom.setSpacing(8);
-        Label price = new Label("KES " + drink.getPrice()); price.getStyleClass().add("drink-price");
-        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        bottom.setAlignment(Pos.BOTTOM_LEFT); 
+        bottom.setSpacing(8);
+        Label price = new Label("KES " + drink.getPrice()); 
+        price.getStyleClass().add("drink-price");
+        
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
         Label stock = new Label(drink.getStock() == 0 ? "Out of stock" : drink.getStock() + " units");
         stock.getStyleClass().addAll("drink-stock", drink.getStock() == 0 ? "out" : drink.getStock() < 10 ? "low" : "ok");
+        
         bottom.getChildren().addAll(price, spacer, stock);
-        card.getChildren().addAll(imgPlaceholder, name, brand, bottom);
-        if (drink.getStock() > 0) card.setOnMouseClicked(e -> addToCart(drink));
-        else card.setDisable(true);
+        content.getChildren().addAll(name, brand, bottom);
+        
+        card.getChildren().addAll(imgContainer, content);
+        
+        if (drink.getStock() > 0) {
+            card.setOnMouseClicked(e -> addToCart(drink));
+        } else {
+            card.setDisable(true);
+            card.setOpacity(0.5);
+        }
         return card;
     }
 

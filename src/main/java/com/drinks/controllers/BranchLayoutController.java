@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -26,54 +28,34 @@ public class BranchLayoutController {
         view.getStyleClass().add("branch-root");
 
         // Header
-        VBox header = new VBox();
+        HBox header = new HBox(20);
         header.getStyleClass().add("branch-header");
-        header.setPadding(new Insets(0, 16, 0, 16));
+        header.setPadding(new Insets(0, 24, 0, 24));
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPrefHeight(64);
+        header.setMinHeight(64);
 
-        HBox topRow = new HBox(8);
-        topRow.setPadding(new Insets(12, 0, 8, 0));
-        topRow.setAlignment(Pos.CENTER_LEFT);
-
-        Label logo = new Label("KLS");
+        Label logo = new Label();
+        try {
+            Image logoImg = new Image(getClass().getResourceAsStream("/com/drinks/assets/images/kls-logo.png"));
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setFitWidth(32);
+            logoView.setFitHeight(32);
+            logoView.setPreserveRatio(true);
+            logo.setGraphic(logoView);
+        } catch (Exception e) {
+            logo.setText("KLS");
+        }
         logo.getStyleClass().add("branch-logo");
 
         Label storeName = new Label("Kamnyweso Liqour Store");
         storeName.getStyleClass().add("branch-store-name");
+        HBox brandBox = new HBox(12, logo, storeName);
+        brandBox.setAlignment(Pos.CENTER_LEFT);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Region liveDot = new Region();
-        liveDot.getStyleClass().add("live-dot");
-        Label liveText = new Label("Connected");
-        liveText.getStyleClass().add("branch-live-text");
-        HBox liveBox = new HBox(6, liveDot, liveText);
-        liveBox.setAlignment(Pos.CENTER);
-
-        Separator vSep = new Separator();
-        vSep.setOrientation(javafx.geometry.Orientation.VERTICAL);
-        vSep.getStyleClass().add("branch-vsep");
-        vSep.setPrefHeight(24);
-
-        Label userName = new Label("Sarah J.");
-        userName.getStyleClass().add("branch-user-name");
-        Label userBranch = new Label("Nakuru");
-        userBranch.getStyleClass().add("branch-user-branch");
-        VBox userInfo = new VBox(2, userName, userBranch);
-
-        Label avatar = new Label("SJ");
-        avatar.getStyleClass().add("avatar");
-
-        Button logoutBtn = new Button();
-        logoutBtn.setGraphic(Icons.logOut(16, Color.web("#F1F5F9")));
-        logoutBtn.getStyleClass().add("btn-link");
-        logoutBtn.setOnAction(e -> NavigationManager.getInstance().navigate("login", new LoginController().getView()));
-
-        topRow.getChildren().addAll(logo, storeName, spacer, liveBox, vSep, userInfo, avatar, logoutBtn);
-
-        navBar = new HBox(4);
-        navBar.setPadding(new Insets(0, 0, 8, 0));
-
+        navBar = new HBox(8);
+        navBar.setAlignment(Pos.CENTER);
+        
         // View factories for caching
         viewFactories.put("POS", () -> new PlaceOrderController().getView());
         viewFactories.put("Order to HQ", () -> new OrderToHQController().getView());
@@ -96,7 +78,38 @@ public class BranchLayoutController {
             idx++;
         }
 
-        header.getChildren().addAll(topRow, navBar);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Region liveDot = new Region();
+        liveDot.getStyleClass().add("live-dot");
+        Label liveText = new Label("Connected");
+        liveText.getStyleClass().add("branch-live-text");
+        HBox liveBox = new HBox(6, liveDot, liveText);
+        liveBox.setAlignment(Pos.CENTER);
+
+        Separator vSep = new Separator();
+        vSep.setOrientation(javafx.geometry.Orientation.VERTICAL);
+        vSep.getStyleClass().add("branch-vsep");
+        vSep.setPrefHeight(24);
+        vSep.setPadding(new Insets(0, 8, 0, 8));
+
+        Label userName = new Label("Sarah J.");
+        userName.getStyleClass().add("branch-user-name");
+        Label userBranch = new Label("Nakuru");
+        userBranch.getStyleClass().add("branch-user-branch");
+        VBox userInfo = new VBox(2, userName, userBranch);
+        userInfo.setAlignment(Pos.CENTER_RIGHT);
+
+        Label avatar = new Label("SJ");
+        avatar.getStyleClass().add("avatar");
+
+        Button logoutBtn = new Button();
+        logoutBtn.setGraphic(Icons.logOut(16, Color.web("#F1F5F9")));
+        logoutBtn.getStyleClass().add("btn-link");
+        logoutBtn.setOnAction(e -> NavigationManager.getInstance().navigate("login", new LoginController().getView()));
+
+        header.getChildren().addAll(brandBox, navBar, spacer, liveBox, userInfo, avatar, logoutBtn);
 
         // Content
         contentArea = new VBox();
