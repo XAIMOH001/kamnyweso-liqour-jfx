@@ -1,0 +1,260 @@
+package com.drinks.controllers;
+
+import com.drinks.components.Icons;
+import com.drinks.components.OTPInput;
+import com.drinks.models.Drink;
+import com.drinks.services.MockDataService;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class PlaceOrderController {
+    private final VBox view;
+    private final ObservableList<CartItem> cart = FXCollections.observableArrayList();
+    private final Map<String, Drink> drinkMap = new HashMap<>();
+
+    public PlaceOrderController() {
+        view = new VBox(20);
+
+        HBox progress = createProgressBar(2);
+        VBox customerCard = createCustomerCard();
+
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search drinks by name or brand...");
+
+        GridPane drinkGrid = new GridPane();
+        drinkGrid.setHgap(12);
+        drinkGrid.setVgap(12);
+        var drinks = MockDataService.getInstance().getDrinks();
+        int col = 0, row = 0;
+        for (Drink d : drinks) {
+            drinkMap.put(d.getName(), d);
+            drinkGrid.add(createDrinkCard(d), col, row);
+            col++;
+            if (col >= 3) { col = 0; row++; }
+        }
+
+        VBox cartPanel = createCartPanel();
+        VBox leftPanel = new VBox(16, customerCard, searchField, drinkGrid);
+        HBox mainContent = new HBox(24, leftPanel, cartPanel);
+        HBox.setHgrow(leftPanel, Priority.ALWAYS);
+
+        view.getChildren().addAll(progress, mainContent);
+
+        searchField.textProperty().addListener((obs, old, newVal) -> {
+            drinkGrid.getChildren().clear();
+            int c = 0, r = 0;
+            String lower = newVal.toLowerCase();
+            for (Drink d : drinks) {
+                if (d.getName().toLowerCase().contains(lower) || d.getBrand().toLowerCase().contains(lower)) {
+                    drinkGrid.add(createDrinkCard(d), c, r);
+                    c++;
+                    if (c >= 3) { c = 0; r++; }
+                }
+            }
+        });
+    }
+
+    private HBox createProgressBar(int currentStep) {
+        HBox bar = new HBox(16);
+        bar.getStyleClass().add("ds-card");
+        bar.setAlignment(Pos.CENTER);
+        String[] steps = {"Customer", "Select Drinks", "Review Cart", "Confirm"};
+        for (int i = 0; i < steps.length; i++) {
+            Label num = new Label(String.valueOf(i + 1));
+            num.getStyleClass().addAll("progress-step-num", i + 1 <= currentStep ? "active" : "inactive");
+            Label label = new Label(steps[i]);
+            label.getStyleClass().addAll("progress-step-label", i + 1 <= currentStep ? "active" : "inactive");
+            HBox stepBox = new HBox(6, num, label);
+            stepBox.setAlignment(Pos.CENTER);
+            bar.getChildren().add(stepBox);
+            if (i < steps.length - 1) {
+                Region line = new Region();
+                line.getStyleClass().addAll("progress-step-line", i + 1 < currentStep ? "active" : "inactive");
+                bar.getChildren().add(line);
+            }
+        }
+        return bar;
+    }
+
+    private VBox createCustomerCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("ds-card");
+        HBox titleRow = new HBox(8);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        titleRow.getChildren().addAll(
+            Icons.users(16, Color.web("#2563EB")),
+            new Label("Customer Details") {{ getStyleClass().add("ds-heading"); }}
+        );
+
+        GridPane form = new GridPane();
+        form.setHgap(12); form.setVgap(8);
+        Label nameL = new Label("Full Name"); nameL.getStyleClass().add("ds-label");
+        TextField nameF = new TextField(); nameF.setPromptText("Full Name");
+        Label phoneL = new Label("Phone Number"); phoneL.getStyleClass().add("ds-label");
+        TextField phoneF = new TextField(); phoneF.setPromptText("+254 7XX");
+        Label loyaltyL = new Label("Loyalty Card ID"); loyaltyL.getStyleClass().add("ds-label");
+        HBox loyaltyBox = new HBox(8, new TextField() {{ setPromptText("LC-XXXXX"); }}, new Button("Scan") {{ getStyleClass().add("btn-outline"); }});
+        form.add(nameL, 0, 0); form.add(nameF, 0, 1);
+        form.add(phoneL, 1, 0); form.add(phoneF, 1, 1);
+        form.add(loyaltyL, 2, 0); form.add(loyaltyBox, 2, 1);
+        card.getChildren().addAll(titleRow, form);
+        return card;
+    }
+
+    private VBox createDrinkCard(Drink drink) {
+        VBox card = new VBox(8);
+        card.getStyleClass().add("drink-card");
+        card.setPadding(new Insets(12));
+        Region imgPlaceholder = new Region();
+        imgPlaceholder.getStyleClass().addAll("drink-img-placeholder", "tall");
+        Label name = new Label(drink.getName()); name.getStyleClass().add("drink-name");
+        Label brand = new Label(drink.getBrand()); brand.getStyleClass().add("drink-brand");
+        HBox bottom = new HBox();
+        bottom.setAlignment(Pos.CENTER_LEFT); bottom.setSpacing(8);
+        Label price = new Label("KES " + drink.getPrice()); price.getStyleClass().add("drink-price");
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label stock = new Label(drink.getStock() == 0 ? "Out of stock" : drink.getStock() + " units");
+        stock.getStyleClass().addAll("drink-stock", drink.getStock() == 0 ? "out" : drink.getStock() < 10 ? "low" : "ok");
+        bottom.getChildren().addAll(price, spacer, stock);
+        card.getChildren().addAll(imgPlaceholder, name, brand, bottom);
+        if (drink.getStock() > 0) card.setOnMouseClicked(e -> addToCart(drink));
+        else card.setDisable(true);
+        return card;
+    }
+
+    private void addToCart(Drink drink) {
+        for (CartItem item : cart) { if (item.name.equals(drink.getName())) { item.qty++; return; } }
+        cart.add(new CartItem(drink.getName(), 1, drink.getPrice()));
+    }
+
+    private VBox createCartPanel() {
+        VBox panel = new VBox(0);
+        panel.getStyleClass().add("ds-card");
+        panel.setPadding(new Insets(0));
+        panel.setPrefWidth(320); panel.setMaxWidth(320);
+
+        HBox header = new HBox();
+        header.setPadding(new Insets(16, 20, 16, 20)); header.setAlignment(Pos.CENTER_LEFT);
+        Label headerTitle = new Label("Current Cart"); headerTitle.getStyleClass().add("ds-heading");
+        Label badge = new Label(cart.size() + " Items"); badge.getStyleClass().add("badge-primary");
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        header.getChildren().addAll(headerTitle, spacer, badge);
+
+        VBox itemsBox = new VBox(8);
+        itemsBox.setPadding(new Insets(16, 20, 16, 20));
+        ScrollPane scroll = new ScrollPane(itemsBox);
+        scroll.getStyleClass().add("content-scroll"); scroll.setFitToWidth(true); scroll.setMaxHeight(300);
+
+        VBox footer = new VBox(12);
+        footer.getStyleClass().add("cart-footer");
+        Label subtotalLabel = new Label(); subtotalLabel.getStyleClass().add("cart-subtotal");
+        Label totalLabel = new Label(); totalLabel.getStyleClass().add("cart-total");
+
+        VBox loyaltyBox = new VBox(2);
+        loyaltyBox.getStyleClass().add("loyalty-earned-box");
+        HBox loyaltyIconRow = new HBox(8);
+        loyaltyIconRow.setAlignment(Pos.CENTER_LEFT);
+        loyaltyIconRow.getChildren().add(Icons.award(16, Color.web("#2563EB")));
+        VBox loyaltyText = new VBox(2);
+        Label loyaltyTitle = new Label("Loyalty Earned"); loyaltyTitle.getStyleClass().add("loyalty-earned-title");
+        Label loyaltyPts = new Label("+0 Points"); loyaltyPts.getStyleClass().add("loyalty-earned-value");
+        loyaltyText.getChildren().addAll(loyaltyTitle, loyaltyPts);
+        loyaltyIconRow.getChildren().add(loyaltyText);
+        loyaltyBox.getChildren().add(loyaltyIconRow);
+
+        Button completeBtn = new Button("Submit Order to HQ");
+        completeBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox lockRow = new HBox(4);
+        lockRow.setAlignment(Pos.CENTER);
+        lockRow.getChildren().addAll(
+            Icons.lock(12, Color.web("#6B7280")),
+            new Label("Deleting items requires supervisor PIN") {{ getStyleClass().add("cart-lock-note"); }}
+        );
+
+        footer.getChildren().addAll(subtotalLabel, totalLabel, loyaltyBox, completeBtn, lockRow);
+        panel.getChildren().addAll(header, scroll, footer);
+
+        cart.addListener((javafx.collections.ListChangeListener<CartItem>) c -> updateCart(itemsBox, subtotalLabel, totalLabel, badge, loyaltyPts));
+        updateCart(itemsBox, subtotalLabel, totalLabel, badge, loyaltyPts);
+        return panel;
+    }
+
+    private void updateCart(VBox itemsBox, Label subtotalLabel, Label totalLabel, Label badge, Label loyaltyPts) {
+        itemsBox.getChildren().clear();
+        int subtotal = 0;
+        for (CartItem item : cart) {
+            HBox row = new HBox(12); row.setAlignment(Pos.CENTER_LEFT);
+            Button deleteBtn = new Button();
+            deleteBtn.setGraphic(Icons.trash(14, Color.web("#9CA3AF")));
+            deleteBtn.getStyleClass().add("btn-link");
+            deleteBtn.setOnAction(e -> showPinModal(item));
+            Label name = new Label(item.name); name.getStyleClass().addAll("cart-item", "name");
+            Label detail = new Label(item.qty + " x KES " + item.unitPrice); detail.getStyleClass().addAll("cart-item", "detail");
+            VBox info = new VBox(2, name, detail);
+            Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+            Label total = new Label("KES " + (item.qty * item.unitPrice)); total.getStyleClass().addAll("cart-item", "total");
+            row.getChildren().addAll(deleteBtn, info, spacer, total);
+            itemsBox.getChildren().add(row);
+            subtotal += item.qty * item.unitPrice;
+        }
+        if (cart.isEmpty()) {
+            Label empty = new Label("Cart is empty");
+            empty.getStyleClass().add("cart-empty");
+            empty.setAlignment(Pos.CENTER);
+            itemsBox.getChildren().add(empty);
+        }
+        subtotalLabel.setText("Subtotal: KES " + String.format("%,d", subtotal));
+        totalLabel.setText("Total: KES " + String.format("%,d", subtotal));
+        badge.setText(cart.size() + " Items");
+        int pts = subtotal / 10;
+        loyaltyPts.setText("+" + pts + " Points");
+    }
+
+    private void showPinModal(CartItem target) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Supervisor PIN");
+        VBox content = new VBox(16);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(8));
+
+        content.getChildren().add(Icons.shieldCheck(40, Color.web("#2563EB")));
+        Label title = new Label("Supervisor PIN");
+        title.getStyleClass().add("ds-heading");
+        Label desc = new Label("Required to remove items from cart");
+        desc.getStyleClass().add("ds-text-muted");
+
+        OTPInput otp = new OTPInput(4);
+        Label warning = new Label("3 wrong attempts flags this action to admin");
+        warning.getStyleClass().add("danger-text");
+
+        HBox btns = new HBox(8);
+        Button cancel = new Button("Cancel");
+        cancel.getStyleClass().add("btn-secondary");
+        cancel.setMaxWidth(Double.MAX_VALUE); HBox.setHgrow(cancel, Priority.ALWAYS);
+        cancel.setOnAction(e -> dialog.close());
+        Button confirm = new Button("Confirm");
+        confirm.setMaxWidth(Double.MAX_VALUE); HBox.setHgrow(confirm, Priority.ALWAYS);
+        confirm.setOnAction(e -> { cart.remove(target); dialog.close(); });
+        btns.getChildren().addAll(cancel, confirm);
+
+        content.getChildren().addAll(title, desc, otp, btns, warning);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        dialog.showAndWait();
+    }
+
+    public VBox getView() { return view; }
+
+    public static class CartItem {
+        public String name; public int qty; public int unitPrice;
+        public CartItem(String name, int qty, int unitPrice) { this.name = name; this.qty = qty; this.unitPrice = unitPrice; }
+    }
+}
