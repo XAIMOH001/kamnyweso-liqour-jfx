@@ -18,6 +18,7 @@
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/PortalSelectorController.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/RegisterController.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/ReportsController.java
+/run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/SettingsController.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/StockManagementController.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/StockReturnsController.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/controllers/TrackStockOrdersController.java
@@ -35,3 +36,5 @@
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/services/MockDataService.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/services/NavigationManager.java
 /run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/utils/Formatters.java
+/run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/utils/PinValidator.java
+/run/media/xaimoh/chau/projects/java-drinks/src/main/java/com/drinks/utils/PrintUtils.java

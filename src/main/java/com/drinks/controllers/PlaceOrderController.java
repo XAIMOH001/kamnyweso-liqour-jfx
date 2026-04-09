@@ -4,6 +4,7 @@ import com.drinks.components.Icons;
 import com.drinks.components.OTPInput;
 import com.drinks.models.Drink;
 import com.drinks.services.MockDataService;
+import com.drinks.utils.PinValidator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -258,7 +259,7 @@ public class PlaceOrderController {
     }
 
     private void showPinModal(CartItem target) {
-        Dialog<Void> dialog = new Dialog<>();
+        Dialog<Boolean> dialog = new Dialog<>();
         dialog.setTitle("Supervisor PIN");
         VBox content = new VBox(16);
         content.setAlignment(Pos.CENTER);
@@ -273,6 +274,8 @@ public class PlaceOrderController {
         OTPInput otp = new OTPInput(4);
         Label warning = new Label("3 wrong attempts flags this action to admin");
         warning.getStyleClass().add("danger-text");
+        Label attemptsLabel = new Label("Attempts remaining: " + PinValidator.getRemainingAttempts());
+        attemptsLabel.getStyleClass().add("ds-text-muted");
 
         HBox btns = new HBox(8);
         Button cancel = new Button("Cancel");
@@ -281,12 +284,36 @@ public class PlaceOrderController {
         cancel.setOnAction(e -> dialog.close());
         Button confirm = new Button("Confirm");
         confirm.setMaxWidth(Double.MAX_VALUE); HBox.setHgrow(confirm, Priority.ALWAYS);
-        confirm.setOnAction(e -> { cart.remove(target); dialog.close(); });
+        confirm.setOnAction(e -> {
+            String pin = otp.getValue();
+            if (PinValidator.isLockedOut()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Access Locked");
+                alert.setHeaderText(null);
+                alert.setContentText("Too many failed attempts. This action has been flagged to admin.");
+                alert.showAndWait();
+                return;
+            }
+            if (PinValidator.validate(pin)) {
+                PinValidator.resetAttempts();
+                cart.remove(target);
+                dialog.setResult(true);
+            } else {
+                attemptsLabel.setText("Attempts remaining: " + PinValidator.getRemainingAttempts());
+                if (PinValidator.isLockedOut()) {
+                    warning.setText("ACCESS LOCKED - Action flagged to admin");
+                    confirm.setDisable(true);
+                }
+                otp.clear();
+                otp.requestFocus();
+            }
+        });
         btns.getChildren().addAll(cancel, confirm);
 
-        content.getChildren().addAll(title, desc, otp, btns, warning);
+        content.getChildren().addAll(title, desc, otp, attemptsLabel, btns, warning);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        dialog.setResultConverter(b -> b == ButtonType.OK);
         dialog.showAndWait();
     }
 

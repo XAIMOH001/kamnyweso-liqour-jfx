@@ -2,12 +2,16 @@ package com.drinks.controllers;
 
 import com.drinks.components.Icons;
 import com.drinks.services.MockDataService;
+import com.drinks.utils.PrintUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReportsController {
     private final VBox view;
@@ -130,9 +134,11 @@ public class ReportsController {
         Button pdfBtn = new Button("Export PDF");
         pdfBtn.setGraphic(Icons.download(14, Color.web("#2563EB")));
         pdfBtn.getStyleClass().add("btn-link");
+        pdfBtn.setOnAction(e -> exportPDF());
         Button csvBtn = new Button("Export CSV");
         csvBtn.setGraphic(Icons.download(14, Color.web("#2563EB")));
         csvBtn.getStyleClass().add("btn-link");
+        csvBtn.setOnAction(e -> exportCSV());
         header.getChildren().addAll(title, spacer, pdfBtn, csvBtn);
 
         table.getStyleClass().add("table-view");
@@ -167,6 +173,40 @@ public class ReportsController {
         }
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    }
+
+    private void exportPDF() {
+        String[] columns = table.getColumns().stream()
+            .map(c -> ((TableColumn<ReportRow, ?>) c).getText())
+            .toArray(String[]::new);
+        List<String[]> rows = new ArrayList<>();
+        for (ReportRow row : table.getItems()) {
+            String[] values = new String[row.cells.length];
+            for (int i = 0; i < row.cells.length; i++) {
+                values[i] = row.cells[i].get();
+            }
+            rows.add(values);
+        }
+        String fileName = selectedReport.toLowerCase().replace(" ", "-") + "-" + java.time.LocalDate.now();
+        javafx.stage.Stage stage = (javafx.stage.Stage) view.getScene().getWindow();
+        PrintUtils.exportToPDF(stage, fileName, selectedReport, columns, rows);
+    }
+
+    private void exportCSV() {
+        String[] columns = table.getColumns().stream()
+            .map(c -> ((TableColumn<ReportRow, ?>) c).getText())
+            .toArray(String[]::new);
+        List<String[]> rows = new ArrayList<>();
+        for (ReportRow row : table.getItems()) {
+            String[] values = new String[row.cells.length];
+            for (int i = 0; i < row.cells.length; i++) {
+                values[i] = row.cells[i].get();
+            }
+            rows.add(values);
+        }
+        String fileName = selectedReport.toLowerCase().replace(" ", "-") + "-" + java.time.LocalDate.now();
+        javafx.stage.Stage stage = (javafx.stage.Stage) view.getScene().getWindow();
+        PrintUtils.exportToCSV(stage, fileName, columns, rows);
     }
 
     public VBox getView() { return view; }

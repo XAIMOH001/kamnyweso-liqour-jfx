@@ -6,6 +6,7 @@ com/drinks/controllers/StockReturnsController$5.class
 com/drinks/models/Return.class
 com/drinks/controllers/StockManagementController.class
 com/drinks/models/TimelineStep.class
+com/drinks/utils/PrintUtils.class
 com/drinks/controllers/AdminDashboardController.class
 com/drinks/controllers/UserManagementController$4.class
 com/drinks/controllers/OrderHistoryController$4.class
@@ -15,6 +16,7 @@ com/drinks/controllers/OrderManagementController$3.class
 com/drinks/controllers/OrderManagementController$6.class
 com/drinks/controllers/PortalSelectorController.class
 com/drinks/controllers/PlaceOrderController$2.class
+com/drinks/utils/PinValidator.class
 com/drinks/controllers/OrderHistoryController$7.class
 com/drinks/controllers/OrderHistoryController$12.class
 com/drinks/models/Order.class
@@ -23,6 +25,7 @@ com/drinks/controllers/LoyaltyController$4.class
 com/drinks/controllers/StockReturnsController$2.class
 com/drinks/controllers/ReportsController$1.class
 com/drinks/controllers/StockManagementController$4.class
+com/drinks/controllers/OrderHistoryController$15.class
 com/drinks/controllers/StockManagementController$11.class
 com/drinks/controllers/OrderToHQController$OrderItem.class
 com/drinks/controllers/LoyaltyController$PurchaseRow.class
@@ -33,9 +36,11 @@ com/drinks/controllers/OrderHistoryController$6.class
 com/drinks/controllers/StockManagementController$8.class
 com/drinks/controllers/LoyaltyController$10.class
 com/drinks/controllers/StockReturnsController.class
+com/drinks/controllers/OrderHistoryController$21.class
 com/drinks/controllers/StockManagementController$1.class
 com/drinks/controllers/UserManagementController$2.class
 com/drinks/components/StatusBadge.class
+com/drinks/controllers/OrderHistoryController$18.class
 com/drinks/components/StatCard.class
 com/drinks/controllers/OrderManagementController.class
 com/drinks/controllers/OrderHistoryController$11.class
@@ -48,6 +53,7 @@ com/drinks/controllers/UserManagementController.class
 com/drinks/controllers/LoyaltyController$9.class
 com/drinks/controllers/UserManagementController$9.class
 com/drinks/controllers/LoyaltyController$1.class
+com/drinks/controllers/OrderHistoryController$22.class
 com/drinks/controllers/ReportsController.class
 com/drinks/controllers/LoyaltyController$11.class
 com/drinks/models/StockItem.class
@@ -66,6 +72,7 @@ com/drinks/controllers/LoyaltyController$2.class
 com/drinks/controllers/LoyaltyController.class
 com/drinks/controllers/AdminPOSController.class
 com/drinks/models/TrackedOrder.class
+com/drinks/controllers/OrderHistoryController$17.class
 com/drinks/controllers/OrderManagementController$2.class
 com/drinks/controllers/StockManagementController$2.class
 com/drinks/controllers/PlaceOrderController.class
@@ -78,8 +85,10 @@ com/drinks/utils/Formatters.class
 com/drinks/controllers/AdminDashboardController$4.class
 com/drinks/controllers/StockReturnsController$1.class
 com/drinks/controllers/LoyaltyController$3.class
+com/drinks/controllers/OrderHistoryController$16.class
 com/drinks/controllers/ReportsController$ReportRow.class
 com/drinks/controllers/AdminLayoutController.class
+com/drinks/controllers/SettingsController.class
 com/drinks/controllers/StockManagementController$6.class
 com/drinks/controllers/OrderHistoryController.class
 com/drinks/controllers/PlaceOrderController$CartItem.class
@@ -87,6 +96,8 @@ com/drinks/controllers/LoyaltyController$6.class
 com/drinks/controllers/StockReturnsController$4.class
 com/drinks/controllers/OTPVerifyController.class
 com/drinks/models/PendingApproval.class
+com/drinks/controllers/OrderHistoryController$20.class
+com/drinks/controllers/OrderHistoryController$19.class
 com/drinks/controllers/UserManagementController$8.class
 com/drinks/controllers/OrderHistoryController$3.class
 com/drinks/controllers/PlaceOrderController$3.class

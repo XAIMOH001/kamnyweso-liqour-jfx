@@ -3,11 +3,14 @@ package com.drinks.controllers;
 import com.drinks.components.StatusBadge;
 import com.drinks.models.Order;
 import com.drinks.services.MockDataService;
+import com.drinks.utils.PrintUtils;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
 public class OrderHistoryController {
     private final VBox view;
@@ -170,7 +173,30 @@ public class OrderHistoryController {
             new Label(order.getDate()) {{ getStyleClass().add("ds-text-muted"); setAlignment(Pos.CENTER); }}
         );
 
-        content.getChildren().addAll(header, details);
+        HBox actionBtns = new HBox(12);
+        actionBtns.setAlignment(Pos.CENTER_RIGHT);
+        Button printBtn = new Button("Print Receipt");
+        printBtn.getStyleClass().add("btn-outline");
+        printBtn.setOnAction(e -> {
+            VBox receiptNode = new VBox(12, 
+                new Label("Kamnyweso Liquor Store") {{ getStyleClass().add("ds-heading"); }},
+                new Label(order.getId()) {{ getStyleClass().addAll("ds-text-muted", "ds-mono"); }},
+                new Separator(),
+                createRow("Branch", "Nakuru"),
+                createRow("Staff", order.getStaff()),
+                createRow("Customer", order.getCustomer()),
+                new Label("Items: " + order.getItems()),
+                new Separator(),
+                new HBox(new Label("Total") {{ getStyleClass().add("ds-text-muted"); }}, new Region() {{ HBox.setHgrow(this, Priority.ALWAYS); }}, new Label("KES " + order.getTotal()) {{ getStyleClass().add("ds-value"); }}),
+                new HBox(new Label("Loyalty Points") {{ getStyleClass().add("ds-text-small"); }}, new Label("+" + order.getLoyalty() + " pts") {{ getStyleClass().add("badge-loyalty"); }}),
+                new Label(order.getDate()) {{ getStyleClass().add("ds-text-muted"); setAlignment(Pos.CENTER); }}
+            );
+            receiptNode.setPadding(new Insets(16));
+            PrintUtils.printReceipt(receiptNode);
+        });
+        actionBtns.getChildren().add(printBtn);
+
+        content.getChildren().addAll(header, details, actionBtns);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
         dialog.showAndWait();

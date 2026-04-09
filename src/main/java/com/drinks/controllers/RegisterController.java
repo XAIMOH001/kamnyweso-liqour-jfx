@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -80,13 +81,15 @@ public class RegisterController {
 
     private void buildStep1(VBox container) {
         container.getChildren().clear();
-        String[] fields = {"Full Name", "Phone Number", "Email"};
+        Map<String, TextField> fields = new LinkedHashMap<>();
+        String[] fieldNames = {"Full Name", "Phone Number", "Email"};
         String[] prompts = {"John Doe", "+254 7XX XXX XXX", "john@example.com"};
-        for (int i = 0; i < fields.length; i++) {
-            Label label = new Label(fields[i]);
+        for (int i = 0; i < fieldNames.length; i++) {
+            Label label = new Label(fieldNames[i]);
             label.getStyleClass().add("ds-label");
             TextField field = new TextField();
             field.setPromptText(prompts[i]);
+            fields.put(fieldNames[i], field);
             container.getChildren().addAll(label, field);
         }
 
@@ -104,9 +107,35 @@ public class RegisterController {
         roleField.setValue("Cashier");
         container.getChildren().addAll(roleLabel, roleField);
 
+        Label errorLabel = new Label();
+        errorLabel.getStyleClass().add("danger-text");
+        errorLabel.setVisible(false);
+        container.getChildren().add(errorLabel);
+
         Button continueBtn = new Button("Continue \u2192");
         continueBtn.setMaxWidth(Double.MAX_VALUE);
         continueBtn.setOnAction(e -> {
+            String name = fields.get("Full Name").getText().trim();
+            String phone = fields.get("Phone Number").getText().trim();
+            String email = fields.get("Email").getText().trim();
+
+            if (name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
+                errorLabel.setText("All fields are required");
+                errorLabel.setVisible(true);
+                return;
+            }
+            if (!email.contains("@") || !email.contains(".")) {
+                errorLabel.setText("Please enter a valid email address");
+                errorLabel.setVisible(true);
+                return;
+            }
+            if (!phone.startsWith("+") || phone.length() < 10) {
+                errorLabel.setText("Please enter a valid phone number starting with +");
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            errorLabel.setVisible(false);
             step[0] = 2;
             updateDots(2);
             buildStep2(container);
@@ -130,13 +159,46 @@ public class RegisterController {
         container.getChildren().addAll(confirmLabel, confirmField);
 
         VBox rules = new VBox(6);
+        Label[] ruleLabels = new Label[4];
         String[] ruleTexts = {"At least 8 characters", "One uppercase letter", "One number", "One special symbol"};
-        for (String rule : ruleTexts) {
-            Label ruleLabel = new Label(rule);
-            ruleLabel.getStyleClass().add("rule-unmet");
-            rules.getChildren().add(ruleLabel);
+        for (int i = 0; i < ruleTexts.length; i++) {
+            ruleLabels[i] = new Label(ruleTexts[i]);
+            ruleLabels[i].getStyleClass().add("rule-unmet");
+            rules.getChildren().add(ruleLabels[i]);
         }
         container.getChildren().add(rules);
+
+        Label matchLabel = new Label();
+        matchLabel.getStyleClass().add("ds-text-small");
+        container.getChildren().add(matchLabel);
+
+        passField.textProperty().addListener((obs, old, newVal) -> {
+            boolean length = newVal.length() >= 8;
+            boolean upper = newVal.matches(".*[A-Z].*");
+            boolean number = newVal.matches(".*[0-9].*");
+            boolean special = newVal.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
+
+            updateRule(ruleLabels[0], length);
+            updateRule(ruleLabels[1], upper);
+            updateRule(ruleLabels[2], number);
+            updateRule(ruleLabels[3], special);
+        });
+
+        confirmField.textProperty().addListener((obs, old, newVal) -> {
+            String pass = passField.getText();
+            if (newVal.isEmpty()) {
+                matchLabel.setText("");
+                matchLabel.getStyleClass().removeAll("rule-met", "rule-unmet");
+            } else if (newVal.equals(pass)) {
+                matchLabel.setText("Passwords match");
+                matchLabel.getStyleClass().removeAll("rule-unmet");
+                matchLabel.getStyleClass().add("rule-met");
+            } else {
+                matchLabel.setText("Passwords do not match");
+                matchLabel.getStyleClass().removeAll("rule-met");
+                matchLabel.getStyleClass().add("rule-unmet");
+            }
+        });
 
         HBox buttons = new HBox(12);
         Button backBtn = new Button("\u2190 Back");
@@ -153,6 +215,32 @@ public class RegisterController {
         nextBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(nextBtn, Priority.ALWAYS);
         nextBtn.setOnAction(e -> {
+            String pass = passField.getText();
+            String confirm = confirmField.getText();
+
+            boolean length = pass.length() >= 8;
+            boolean upper = pass.matches(".*[A-Z].*");
+            boolean number = pass.matches(".*[0-9].*");
+            boolean special = pass.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
+            boolean match = pass.equals(confirm);
+
+            if (!length || !upper || !number || !special) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Password");
+                alert.setHeaderText(null);
+                alert.setContentText("Password does not meet all requirements.");
+                alert.showAndWait();
+                return;
+            }
+            if (!match) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Password Mismatch");
+                alert.setHeaderText(null);
+                alert.setContentText("Passwords do not match. Please try again.");
+                alert.showAndWait();
+                return;
+            }
+
             step[0] = 3;
             updateDots(3);
             buildStep3(container);
@@ -160,6 +248,11 @@ public class RegisterController {
 
         buttons.getChildren().addAll(backBtn, nextBtn);
         container.getChildren().add(buttons);
+    }
+
+    private void updateRule(Label ruleLabel, boolean met) {
+        ruleLabel.getStyleClass().removeAll("rule-met", "rule-unmet");
+        ruleLabel.getStyleClass().add(met ? "rule-met" : "rule-unmet");
     }
 
     private void buildStep3(VBox container) {

@@ -10,11 +10,16 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+
+import java.io.File;
 
 public class StockReturnsController {
     private final VBox view;
     private final TableView<Return> table;
     private final ObservableList<Return> allReturns;
+    private File selectedPhotoFile;
+    private Label photoFileNameLabel;
 
     public StockReturnsController() {
         view = new VBox(20);
@@ -55,11 +60,35 @@ public class StockReturnsController {
         qtyF.setPromptText("e.g. 4");
 
         Label photoL = new Label("Photo Evidence"); photoL.getStyleClass().add("ds-label");
+        photoFileNameLabel = new Label("No file selected");
+        photoFileNameLabel.getStyleClass().addAll("muted", "text-ellipsis");
+        photoFileNameLabel.setMaxWidth(180);
+        photoFileNameLabel.setTooltip(new Tooltip("No file selected"));
+        
         Button photoBtn = new Button("Upload photo");
         photoBtn.setGraphic(Icons.upload(14, Color.web("#6B7280")));
-        photoBtn.getStyleClass().add("text-field");
-        photoBtn.setMaxWidth(Double.MAX_VALUE);
-        photoBtn.setAlignment(Pos.CENTER_LEFT);
+        photoBtn.getStyleClass().add("btn-outline");
+        photoBtn.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Photo Evidence");
+            fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+            );
+            if (selectedPhotoFile != null) {
+                fileChooser.setInitialDirectory(selectedPhotoFile.getParentFile());
+            }
+            File selected = fileChooser.showOpenDialog(photoBtn.getScene().getWindow());
+            if (selected != null) {
+                selectedPhotoFile = selected;
+                String displayName = selected.getName();
+                photoFileNameLabel.setText(displayName);
+                photoFileNameLabel.setTooltip(new Tooltip(selected.getAbsolutePath()));
+                photoBtn.setText("Change photo");
+            }
+        });
+        
+        VBox photoBox = new VBox(6, photoBtn, photoFileNameLabel);
 
         Label reasonL = new Label("Reason for Return"); reasonL.getStyleClass().add("ds-label");
         TextArea reasonF = new TextArea();
@@ -69,7 +98,7 @@ public class StockReturnsController {
         form.add(itemL, 0, 0); form.add(itemF, 0, 1);
         form.add(branchL, 1, 0); form.add(branchF, 1, 1);
         form.add(qtyL, 0, 2); form.add(qtyF, 0, 3);
-        form.add(photoL, 1, 2); form.add(photoBtn, 1, 3);
+        form.add(photoL, 1, 2); form.add(photoBox, 1, 3);
         form.add(reasonL, 0, 4);
         form.add(reasonF, 0, 5);
         GridPane.setColumnSpan(reasonF, 2);

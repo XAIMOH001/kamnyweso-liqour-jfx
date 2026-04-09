@@ -9,6 +9,8 @@ import javafx.scene.layout.*;
 
 public class LoginController {
     private final VBox view;
+    private int failedAttempts = 0;
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
 
     public LoginController() {
         view = new VBox(24);
@@ -73,9 +75,44 @@ public class LoginController {
         CheckBox rememberBox = new CheckBox("Remember this device");
         rememberBox.getStyleClass().add("auth-remember");
 
+        Label errorLabel = new Label();
+        errorLabel.getStyleClass().add("danger-text");
+        errorLabel.setVisible(false);
+
         Button signInBtn = new Button("Sign In \u2192");
         signInBtn.setMaxWidth(Double.MAX_VALUE);
         signInBtn.setOnAction(e -> {
+            String staff = staffField.getText().trim();
+            String pass = passField.getText();
+
+            if (staff.isEmpty() || pass.isEmpty()) {
+                errorLabel.setText("Staff ID and password are required");
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            if (failedAttempts >= MAX_LOGIN_ATTEMPTS) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Account Locked");
+                alert.setHeaderText(null);
+                alert.setContentText("Too many failed login attempts. Your account has been locked. Please contact an administrator.");
+                alert.showAndWait();
+                return;
+            }
+
+            if (staff.length() < 3) {
+                errorLabel.setText("Invalid Staff ID format");
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            if (pass.length() < 4) {
+                errorLabel.setText("Password must be at least 4 characters");
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            errorLabel.setVisible(false);
             NavigationManager.getInstance().navigate("otp", new OTPVerifyController().getView());
         });
 
@@ -97,7 +134,7 @@ public class LoginController {
         VBox footer = new VBox(16, sep, registerRow, sessionNote);
         footer.setAlignment(Pos.CENTER);
 
-        card.getChildren().addAll(header, branchBox, staffBox, passBox, rememberBox, signInBtn, footer);
+        card.getChildren().addAll(header, branchBox, staffBox, passBox, rememberBox, errorLabel, signInBtn, footer);
         view.getChildren().add(card);
     }
 
